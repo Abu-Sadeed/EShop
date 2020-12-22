@@ -20,9 +20,12 @@ function Product({ product }) {
                     ${product.price}
                 </Card.Text>
                 <Card.Text>
-                    <Rating value={product.rating} text={`${product.numReviews} reviews`} />
+                    <Rating value={product.rating} text={`${product.numReview} reviews`} />
                 </Card.Text>
-                <Button variant="primary">Go somewhere</Button>
+                <Link className='nameLink' to={`/product/${product._id}`}> 
+                    <Button variant="primary" className='btn-dark'>View Product</Button>
+                </Link>
+                
             </Card.Body>
         </Card>
     )
