@@ -14,8 +14,12 @@ function Header() {
         dispatch(logout())
     }
 
+    
+
     const userLogin = useSelector((state) => state.userLogin)
     const { userInfo } = userLogin
+
+
     return (
         <header>
             <Navbar bg="light" expand="lg" collapseOnSelect>
@@ -43,6 +47,20 @@ function Header() {
                                     <AccountCircleIcon />Log In
                                 </Nav.Link>
                             </LinkContainer>)}
+
+                            {userInfo && userInfo.data.isAdmin && (
+                                 <NavDropdown title='Admin' id='adminmenu'>
+                                 <LinkContainer to='/admin/userlist'>
+                                     <NavDropdown.Item>Users</NavDropdown.Item>
+                                 </LinkContainer>
+                                 <LinkContainer to='/admin/productlist'>
+                                     <NavDropdown.Item>Products</NavDropdown.Item>
+                                 </LinkContainer>
+                                 <LinkContainer to='/admin/orderlist'>
+                                     <NavDropdown.Item>Orders</NavDropdown.Item>
+                                 </LinkContainer>
+                             </NavDropdown>
+                            )}
                                                        
                             
                         </Nav>
