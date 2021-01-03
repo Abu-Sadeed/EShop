@@ -1,5 +1,5 @@
 import axios from "axios"
-import { USER_DETAILS_FAIl, USER_DETAILS_REQUEST, USER_DETAILS_SUCCESS, USER_LOGIN_FAIl, USER_LOGIN_REQUEST, USER_LOGIN_SUCCESS, USER_LOGOUT, USER_REGISTER_FAIl, USER_REGISTER_REQUEST, USER_REGISTER_SUCCESS, USER_UPDATE_FAIl, USER_UPDATE_REQUEST, USER_UPDATE_SUCCESS, USER_DETAILS_RESET, USER_LIST_REQUEST, USER_LIST_SUCCESS, USER_LIST_FAIl } from "../constants/userConstants"
+import { USER_DETAILS_FAIl, USER_LIST_RESET, USER_DETAILS_REQUEST, USER_DETAILS_SUCCESS, USER_LOGIN_FAIl, USER_LOGIN_REQUEST, USER_LOGIN_SUCCESS, USER_LOGOUT, USER_REGISTER_FAIl, USER_REGISTER_REQUEST, USER_REGISTER_SUCCESS, USER_UPDATE_FAIl, USER_UPDATE_REQUEST, USER_UPDATE_SUCCESS, USER_DETAILS_RESET, USER_LIST_REQUEST, USER_LIST_SUCCESS, USER_LIST_FAIl, USER_DELETE_REQUEST, USER_DELETE_SUCCESS, USER_DELETE_FAIl, USER_ADMIN_UPDATE_REQUEST, USER_ADMIN_UPDATE_SUCCESS, USER_ADMIN_UPDATE_FAIl } from "../constants/userConstants"
 import { MY_ORDER_RESET } from '../constants/orderConstants'
 
 export const login = (email, password) => async (dispatch) => {
@@ -38,6 +38,7 @@ export const logout = () => (dispatch) => {
     dispatch({ type: USER_LOGOUT })
     dispatch({ type: USER_DETAILS_RESET })
     dispatch({ type: MY_ORDER_RESET })
+    dispatch({ type: USER_LIST_RESET })
 }
 
 export const register = (name, email, password) => async (dispatch) => {
@@ -174,6 +175,73 @@ export const getAllUsers = () => async (dispatch, getState) => {
     } catch (error) {
         dispatch({
             type: USER_LIST_FAIl,
+            payload:
+            error.response && error.response.data.message
+                ? error.response.data.message
+                : error.message,
+        })
+    }
+}
+
+
+export const deleteUser = (id) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: USER_DELETE_REQUEST,
+        })
+
+        const { userLogin: { userInfo } } = getState()
+
+        const config = {
+            headers: {
+                Authorization: `Bearer ${userInfo.data.token}`
+            }
+        }
+
+
+        await axios.delete(`/api/users/${id}`, config)
+
+
+        dispatch({ type: USER_DELETE_SUCCESS })
+        
+    } catch (error) {
+        dispatch({
+            type: USER_DELETE_FAIl,
+            payload:
+            error.response && error.response.data.message
+                ? error.response.data.message
+                : error.message,
+        })
+    }
+}
+
+
+export const editUser = (user) => async (dispatch, getState) => {
+    try {
+        dispatch({
+            type: USER_ADMIN_UPDATE_REQUEST,
+        })
+
+        const { userLogin: { userInfo } } = getState()
+
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${userInfo.data.token}`
+            }
+        }
+
+
+        const { data } = await axios.put(`/api/users/${user._id}`, user, config)
+
+
+        dispatch({ type: USER_ADMIN_UPDATE_SUCCESS })
+
+        dispatch({ type: USER_DETAILS_SUCCESS, payload: data })
+        
+    } catch (error) {
+        dispatch({
+            type: USER_ADMIN_UPDATE_FAIl,
             payload:
             error.response && error.response.data.message
                 ? error.response.data.message
