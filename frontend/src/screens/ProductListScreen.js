@@ -8,14 +8,17 @@ import { listProducts, deleteProduct, createProduct } from '../action/productAct
 import { PRODUCT_CREATE_RESET } from '../constants/productConstants'
 import EditIcon from '@material-ui/icons/Edit';
 import DeleteIcon from '@material-ui/icons/Delete';
+import Paginate from '../components/Paginate'
 
 function ProductListScreen({ match, history }) {
+
+    const pageNumber = match.params.pagenumber || 1
  
     const dispatch = useDispatch()
 
     const productList = useSelector((state) => state.productList)
 
-    const { loading, error, products } = productList
+    const { loading, error, products, page, pages } = productList
 
     
     const userLogin = useSelector((state) => state.userLogin)
@@ -41,10 +44,10 @@ function ProductListScreen({ match, history }) {
         if(successCreate){
             history.push(`/admin/product/${createdProduct._id}/edit`)
         } else {
-            dispatch(listProducts())
+            dispatch(listProducts('', pageNumber))
         }
         
-    }, [dispatch, history, userInfo, productDeleteSuccess, successCreate, createdProduct])
+    }, [dispatch, pageNumber, history, userInfo, productDeleteSuccess, successCreate, createdProduct])
 
     const createProductHandler = () => {
         dispatch(createProduct())
@@ -74,6 +77,7 @@ function ProductListScreen({ match, history }) {
                 {loadingCreate && <Loader/>}
                 {errorCreate && <Message variant='danger'>{errorCreate}</Message>}
             {loading ? <Loader/> : error ? <Message variant='danger'>{error}</Message>: (
+                <>
                 <Table stripped bordered hover responsive className='table-sm'>
                     <thead>
                         <tr>
@@ -111,7 +115,10 @@ function ProductListScreen({ match, history }) {
                         ))}
                     </tbody>
                 </Table>
+                <Paginate pages={pages} page={page} isAdmin={true}/>
+                </>
             )}
+            
         </>
         
     )

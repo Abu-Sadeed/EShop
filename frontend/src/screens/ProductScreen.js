@@ -7,6 +7,7 @@ import Rating from '../components/Rating.component'
 import Loader from '../components/loader'
 import Message from '../components/message'
 import { PRODUCT_REVIEW_RESET } from '../constants/productConstants'
+import Meta from '../components/Meta'
 
 
 const ProductScreen = ({ history, match }) => {
@@ -53,7 +54,10 @@ const ProductScreen = ({ history, match }) => {
                     <Loader style={{margin: 'auto'}} />
                     ) : error ? (
                     <Message variant='danger'>{error}</Message>
-                    ) : (<>
+                    ) : (
+                    
+                    <>
+                    <Meta title={product.name}/>
                         <Row>
                 <Col md={6}>
                     <Image src={product.image} alt={product.name} fluid />
