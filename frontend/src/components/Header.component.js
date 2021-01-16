@@ -1,4 +1,6 @@
 import React from 'react'
+import { Route } from 'react-router-dom'
+import SearchBox from './SearchBox'
 import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap'
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart'
 import AccountCircleIcon from '@material-ui/icons/AccountCircle'
@@ -30,6 +32,7 @@ function Header() {
                     
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />
                     <Navbar.Collapse id="basic-navbar-nav">
+                        <Route render={({ history }) => <SearchBox history={history}/>}/>
                         <Nav className="ml-auto">
                             <LinkContainer to='/cart'>
                                 <Nav.Link><ShoppingCartIcon /> Cart</Nav.Link>

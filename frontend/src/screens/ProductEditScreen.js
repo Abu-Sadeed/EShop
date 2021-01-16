@@ -1,11 +1,13 @@
+import axios from 'axios'
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Form, Button } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import Message from '../components/message'
 import Loader from '../components/loader'
-import { listProductDetails } from '../action/productActions'
+import { listProductDetails, updateProduct } from '../action/productActions'
 import FromContainer from '../components/FromContainer'
+import { PRODUCT_UPDATE_RESET } from '../constants/productConstants'
 
 function ProductEditScreen({ match, history }) {
  
@@ -17,6 +19,7 @@ function ProductEditScreen({ match, history }) {
     const  [category, setCategory] = useState(0)
     const  [countInStock, setCountInStock] = useState('')
     const  [description, setDescription] = useState('')
+    const  [uploading, setUploading] = useState(false)
 
 
     const dispatch = useDispatch()
@@ -25,8 +28,16 @@ function ProductEditScreen({ match, history }) {
 
     const { loading, error, product } = productDetails
 
+    const productUpdate = useSelector((state) => state.productUpdate)
+
+    const { loading:loadingUpdate, error:errorUpdate, success:successUpdate } = productUpdate
+
     useEffect(() => {
-       
+
+        if(successUpdate){
+            dispatch({ type: PRODUCT_UPDATE_RESET })
+            history.push('/admin/productlist')
+        } else {
             if(!product.name || product._id !== productId){
                 dispatch(listProductDetails(productId))
             } else {
@@ -39,14 +50,50 @@ function ProductEditScreen({ match, history }) {
                 setDescription(product.description)
                 
             }
+        }
+       
+            
         
 
         
-    }, [dispatch, productId, product])
+    }, [dispatch, productId, product, history, successUpdate])
+
+    const uploadFileHandler = async (e) =>{
+        const file = e.target.files[0]
+        const formData = new FormData()
+        formData.append('image', file)
+        setUploading(true)
+
+        try {
+            const config = {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            }
+
+            const { data } = await axios.post('/api/upload', formData, config)
+            console.log(data)
+            setImage(data)
+            setUploading(false)
+        } catch (error) {
+            console.log(error)
+            setUploading(false)
+            
+        }
+    } 
 
     const submitHandler = (e) => {
         e.preventDefault()
-        //     
+        dispatch(updateProduct({
+            _id: productId,
+            name,
+            price,
+            image,
+            brand,
+            category,
+            description,
+            countInStock
+        }))
     }
      
     return (
@@ -57,6 +104,8 @@ function ProductEditScreen({ match, history }) {
 
             <FromContainer>
             <h1>Edit Product</h1>
+            {loadingUpdate && <Loader/>}
+            {errorUpdate && <Message variant='danger'>{errorUpdate}</Message>}
             {loading ? <Loader/> : error ? <Message variant='danger'>{error}</Message>:(
                 <Form onSubmit={submitHandler}>
 
@@ -71,7 +120,7 @@ function ProductEditScreen({ match, history }) {
 
                 <Form.Group controlId='price'>
                     <Form.Label>
-                        Price Address
+                        Price
                     </Form.Label>
                     <Form.Control type='number' placeholder='Enter Price' value={price} onChange={(e) => setPrice(e.target.value)}>
 
@@ -85,6 +134,8 @@ function ProductEditScreen({ match, history }) {
                     <Form.Control type='text' placeholder='Enter image url' value={image} onChange={(e) => setImage(e.target.value)}>
 
                     </Form.Control>
+                    <Form.File id='image-file' label='Choose File' custom onChange={uploadFileHandler}></Form.File>
+                    {uploading && <Loader/>}
                 </Form.Group>
 
                 <Form.Group controlId='brand'>
@@ -129,7 +180,7 @@ function ProductEditScreen({ match, history }) {
             </Form>
             )}
             
-        </FromContainer>
+            </FromContainer>
         </>
         
     )

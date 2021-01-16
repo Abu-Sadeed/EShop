@@ -102,5 +102,6 @@ const productSchema = new Schema({
 })
 
 const Products = mongoose.model('Products', productSchema)
+const Reviews = mongoose.model('Reviews', reviewSchema)
 
 export default Products

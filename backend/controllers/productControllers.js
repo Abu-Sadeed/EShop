@@ -6,7 +6,14 @@ import Product from '../models/productsModel.js'
 //@route ... GET /api/products
 //@access .. Public
 const getProducts = asyncHandler(async (req, res) => {
-    const products = await Product.find({})
+    const keyword = req.query.keyword ? {
+        name: {
+            $regex: req.query.keyword,
+            $options: 'i'
+        }
+    } : {}
+
+    const products = await Products.find({ ...keyword })
     res.json(products)
 })
 
@@ -14,7 +21,7 @@ const getProducts = asyncHandler(async (req, res) => {
 //@route ... GET /api/products/:id
 //@access .. Public
 const getProductById = asyncHandler(async (req, res) => {
-    const product = await Product.findById(req.params.id)
+    const product = await Products.findById(req.params.id)
 
     if(product) {
         res.json(product)
@@ -28,7 +35,7 @@ const getProductById = asyncHandler(async (req, res) => {
 //@route ... DELETE /api/products/:id
 //@access .. Private/admin
 const deleteProductById = asyncHandler(async (req, res) => {
-    const product = await Product.findById(req.params.id)
+    const product = await Products.findById(req.params.id)
 
     if(product) {
         await product.remove()
@@ -87,11 +94,57 @@ const updateProduct = asyncHandler(async (req, res) => {
     
 })
 
+//@desc .... Write a review
+//@route ... post /api/products/:id/review
+//@access .. Private
+const reviewProduct = asyncHandler(async (req, res) => {
+    const { rating, comment } = req.body
+
+    const product = await Products.findById(req.params.id)
+
+    if(product){
+        const alreadyReviewed = product.reviews.find(r => r.user.toString() === req.user._id.toString())
+
+        if(alreadyReviewed){
+            res.status(404)
+            throw new Error('product already reviewed by user')
+        } else {
+            const review = {
+            user: req.user._id,
+            name: req.user.name,
+            rating: Number(rating), 
+            comment: comment
+            }
+
+            product.reviews.push(review)
+
+            product.numReview = product.reviews.length
+
+            product.rating = product.reviews.reduce((acc, item) => item.rating + acc, 0) / product.reviews.length
+
+            await product.save()
+            res.status(201).json({ message: 'Review added'})
+        }
+
+        
+    } else {
+        res.status(404)
+        throw new Error('product not found')
+    }
+    
+    
+
+    
+    
+})
+
+
 
 export {
     getProducts,
     getProductById,
     deleteProductById,
     createProduct,
-    updateProduct
+    updateProduct,
+    reviewProduct
 }
